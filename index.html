@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧發布系統</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f4f0;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  color: #1a1a1a;
+}
+.container { max-width: 680px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 600; margin-bottom: 0.25rem; }
+.subtitle { font-size: 14px; color: #888; margin-bottom: 2rem; }
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid #e8e6df;
+  margin-bottom: 1.25rem;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.25rem;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 6px;
+}
+textarea, input[type="text"] {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  color: #1a1a1a;
+  font-family: inherit;
+  background: #fafafa;
+  transition: border-color 0.2s;
+  outline: none;
+}
+textarea { resize: vertical; }
+textarea:focus, input:focus { border-color: #555; background: #fff; }
+.field { margin-bottom: 1.25rem; }
+.hint { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+.upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fafafa;
+}
+.upload-area:hover { border-color: #999; background: #f5f5f5; }
+.upload-area.has-file { border-color: #3b6d11; background: #eaf3de; }
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-text { font-size: 14px; color: #666; }
+.upload-sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+#file-input { display: none; }
+#preview-img { max-width: 100%; border-radius: 8px; margin-top: 1rem; display: none; max-height: 200px; object-fit: cover; }
+
+.api-key-row { display: flex; gap: 8px; }
+.api-key-row input { flex: 1; }
+.toggle-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #666;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: #333; }
+.btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 10px 20px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: #f5f5f5; }
+
+.status {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-top: 1rem;
+  display: none;
+}
+.status.show { display: block; }
+.status.loading { background: #e6f1fb; color: #185fa5; }
+.status.success { background: #eaf3de; color: #3b6d11; }
+.status.error { background: #fcebeb; color: #a32d2d; }
+
+#suggestions-section { display: none; }
+
+.title-option {
+  border: 2px solid #e8e6df;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.title-option:hover { border-color: #999; background: #fafafa; }
+.title-option.selected { border-color: #1a1a1a; background: #f5f4f0; }
+.title-option-num { font-size: 11px; color: #aaa; margin-bottom: 4px; }
+.title-option-text { font-weight: 500; }
+
+.seo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.seo-item {
+  background: #fafafa;
+  border: 1px solid #e8e6df;
+  border-radius: 10px;
+  padding: 12px;
+}
+.seo-item label { font-size: 11px; color: #aaa; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.seo-item input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #e8e6df;
+  border-radius: 0;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.seo-item input:focus { border-bottom-color: #555; }
+
+.img-seo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.divider { height: 1px; background: #f0eeea; margin: 1.25rem 0; }
+
+.loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.publish-row { display: flex; gap: 10px; margin-top: 1rem; }
+.publish-row .btn-primary { flex: 1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>✦ 智慧發布系統</h1>
+  <p class="subtitle">貼上資料，AI 幫你生成文章並建議 SEO，確認後一鍵發布</p>
+
+  <div class="card">
+    <div class="card-title">API 設定</div>
+    <div class="field">
+      <label>Claude API Key</label>
+      <div class="api-key-row">
+        <input type="password" id="api-key" placeholder="sk-ant-api03-..." />
+        <button class="toggle-btn" onclick="toggleKey()">顯示</button>
+      </div>
+      <p class="hint">只存在瀏覽器本地，不會上傳任何伺服器</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">文章素材</div>
+    <div class="field">
+      <label>臉書文章內容</label>
+      <textarea id="my_content" rows="5" placeholder="貼上你的臉書文章內容..."></textarea>
+    </div>
+    <div class="field">
+      <label>LM 資料</label>
+      <textarea id="lm_data" rows="5" placeholder="貼上 LM 相關資料..."></textarea>
+    </div>
+    <div class="field">
+      <label>補充指令 <span style="color:#aaa;font-weight:400">（可留空）</span></label>
+      <textarea id="prompt_extra" rows="2" placeholder="例如：請著重在關鍵字「手機推薦」..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">上傳圖片（選填）</div>
+    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">🖼</div>
+      <div class="upload-text">點擊上傳圖片</div>
+      <div class="upload-sub">JPG、PNG、WEBP，建議 1200×630px</div>
+    </div>
+    <input type="file" id="file-input" accept="image/*" onchange="handleImage(event)" />
+    <img id="preview-img" />
+  </div>
+
+  <button class="btn-primary" id="analyze-btn" onclick="analyze()">
+    分析並生成建議 →
+  </button>
+  <div class="status" id="status1"></div>
+
+  <div id="suggestions-section">
+    <div class="card" style="margin-top:1.25rem">
+      <div class="card-title">選擇文章標題</div>
+      <div id="title-options"></div>
+      <div class="field" style="margin-top:1rem;margin-bottom:0">
+        <label>或自訂標題</label>
+        <input type="text" id="custom-title" placeholder="輸入你想要的標題..." />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SEO 資料（可修改）</div>
+      <div class="seo-grid">
+        <div class="seo-item">
+          <label>焦點關鍵字</label>
+          <input type="text" id="seo-keyword" />
+        </div>
+        <div class="seo-item">
+          <label>網址 Slug</label>
+          <input type="text" id="seo-slug" />
+        </div>
+        <div class="seo-item" style="grid-column: 1 / -1;">
+          <label>Meta 描述</label>
+          <input type="text" id="seo-description" />
+        </div>
+      </div>
+
+      <div id="img-seo" style="display:none">
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:0.75rem">圖片 SEO 建議</div>
+        <div class="img-seo-grid">
+          <div class="seo-item">
+            <label>建議檔名</label>
+            <input type="text" id="img-filename" />
+          </div>
+          <div class="seo-item">
+            <label>Alt 文字</label>
+            <input type="text" id="img-alt" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="publish-row">
+      <button class="btn-secondary" onclick="resetForm()">重新開始</button>
+      <button class="btn-primary" id="publish-btn" onclick="publish()">發布到 WordPress →</button>
+    </div>
+    <div class="status" id="status2"></div>
+  </div>
+</div>
+
+<script>
+const WEBHOOK = 'https://hook.eu2.make.com/bluekojio996d6sj5lfdnspzmmowvn5u';
+let imageBase64 = null;
+let selectedTitle = null;
+
+function toggleKey() {
+  const input = document.getElementById('api-key');
+  const btn = event.target;
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '隱藏'; }
+  else { input.type = 'password'; btn.textContent = '顯示'; }
+}
+
+function handleImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    imageBase64 = ev.target.result.split(',')[1];
+    const preview = document.getElementById('preview-img');
+    preview.src = ev.target.result;
+    preview.style.display = 'block';
+    const area = document.getElementById('upload-area');
+    area.classList.add('has-file');
+    area.querySelector('.upload-text').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'status show ' + type;
+  el.textContent = msg;
+}
+
+function hideStatus(id) {
+  document.getElementById(id).className = 'status';
+}
+
+async function analyze() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  const my_content = document.getElementById('my_content').value.trim();
+  const lm_data = document.getElementById('lm_data').value.trim();
+  const prompt_extra = document.getElementById('prompt_extra').value.trim();
+
+  if (!apiKey) { setStatus('status1', 'error', '請填入 Claude API Key'); return; }
+  if (!my_content || !lm_data) { setStatus('status1', 'error', '請填寫臉書文章與 LM 資料'); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span>Claude 分析中...';
+  setStatus('status1', 'loading', '正在分析內容，生成標題與 SEO 建議（約 15-30 秒）...');
+
+  const userContent = [];
+
+  if (imageBase64) {
+    userContent.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 } });
+  }
+
+  userContent.push({
+    type: 'text',
+    text: `請根據以下內容，只回傳 JSON 格式，不要任何說明文字：
+
+【臉書文章】
+${my_content}
+
+【LM資料】
+${lm_data}
+
+【補充指令】
+${prompt_extra || '無'}
+
+請回傳以下 JSON 結構：
+{
+  "titles": ["標題選項1", "標題選項2", "標題選項3"],
+  "keyword": "焦點關鍵字",
+  "slug": "url-slug-in-english-or-chinese-pinyin",
+  "description": "Meta描述，150字以內",
+  "img_filename": "建議圖片檔名（英文，含副檔名）",
+  "img_alt": "圖片Alt文字（中文）"
+}`
+  });
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || 'API 錯誤');
+
+    const text = data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    const json = JSON.parse(clean);
+
+    renderSuggestions(json);
+    hideStatus('status1');
+  } catch (e) {
+    setStatus('status1', 'error', '分析失敗：' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '重新分析 →';
+}
+
+function renderSuggestions(json) {
+  const container = document.getElementById('title-options');
+  container.innerHTML = '';
+  selectedTitle = json.titles[0];
+
+  json.titles.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'title-option' + (i === 0 ? ' selected' : '');
+    div.innerHTML = `<div class="title-option-num">選項 ${i + 1}</div><div class="title-option-text">${t}</div>`;
+    div.onclick = () => {
+      document.querySelectorAll('.title-option').forEach(el => el.classList.remove('selected'));
+      div.classList.add('selected');
+      selectedTitle = t;
+      document.getElementById('custom-title').value = '';
+    };
+    container.appendChild(div);
+  });
+
+  document.getElementById('seo-keyword').value = json.keyword || '';
+  document.getElementById('seo-slug').value = json.slug || '';
+  document.getElementById('seo-description').value = json.description || '';
+  document.getElementById('img-filename').value = json.img_filename || '';
+  document.getElementById('img-alt').value = json.img_alt || '';
+
+  if (imageBase64) document.getElementById('img-seo').style.display = 'block';
+
+  document.getElementById('suggestions-section').style.display = 'block';
+  document.getElementById('suggestions-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function publish() {
+  const customTitle = document.getElementById('custom-title').value.trim();
+  const title = customTitle || selectedTitle;
+  if (!title) { setStatus('status2', 'error', '請選擇或輸入標題'); return; }
+
+  const btn = document.getElementById('publish-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span>發布中...';
+  setStatus('status2', 'loading', '正在送出資料，請稍候...');
+
+  const payload = {
+    my_content: document.getElementById('my_content').value.trim(),
+    lm_data: document.getElementById('lm_data').value.trim(),
+    prompt_extra: document.getElementById('prompt_extra').value.trim(),
+    selected_title: title,
+    seo_keyword: document.getElementById('seo-keyword').value.trim(),
+    seo_slug: document.getElementById('seo-slug').value.trim(),
+    seo_description: document.getElementById('seo-description').value.trim(),
+    img_filename: document.getElementById('img-filename').value.trim(),
+    img_alt: document.getElementById('img-alt').value.trim(),
+  };
+
+  try {
+    const res = await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      setStatus('status2', 'success', '✓ 成功發布！請到 WordPress 後台查看草稿。');
+    } else {
+      throw new Error('HTTP ' + res.status);
+    }
+  } catch (e) {
+    setStatus('status2', 'error', '發布失敗：' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '發布到 WordPress →';
+}
+
+function resetForm() {
+  document.getElementById('my_content').value = '';
+  document.getElementById('lm_data').value = '';
+  document.getElementById('prompt_extra').value = '';
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('upload-area').classList.remove('has-file');
+  document.getElementById('upload-area').querySelector('.upload-text').textContent = '點擊上傳圖片';
+  document.getElementById('suggestions-section').style.display = 'none';
+  document.getElementById('analyze-btn').textContent = '分析並生成建議 →';
+  imageBase64 = null;
+  selectedTitle = null;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const savedKey = localStorage.getItem('claude_api_key');
+if (savedKey) document.getElementById('api-key').value = savedKey;
+document.getElementById('api-key').addEventListener('change', (e) => {
+  localStorage.setItem('claude_api_key', e.target.value);
+});
+</script>
+</body>
+</html>
